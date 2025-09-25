@@ -7,6 +7,12 @@
       "metadata": ".papi/metadata/dot.scale",
       "genesis": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
       "codeHash": "0x0627ae9ae2a8d0de99a7dad056136f855f32f82391c48bf8a531506fe231a42b"
+    },
+    "wnd": {
+      "chain": "westend2",
+      "metadata": ".papi/metadata/wnd.scale",
+      "genesis": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+      "codeHash": "0x5a55dfc559c7e8f6a475e413cb5ca85b7dd8d167df5dc402c0705a042b473343"
     }
   }
 }
