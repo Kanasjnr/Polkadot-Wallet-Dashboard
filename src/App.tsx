@@ -8,6 +8,7 @@ import {
 import { enableExtensions, getInjectedAccounts } from "./lib/papi/wallet";
 import { MultiAddress } from "@polkadot-api/descriptors";
 import { formatWnd, parseWnd } from "./lib/units";
+import { toast } from "react-toastify";
 
 
 function App() {
@@ -85,11 +86,16 @@ function App() {
         next: (evt: { type: string } & { txHash?: string }) => {
           setTxState(evt.type);
           if (evt.txHash) setTxHash(evt.txHash);
+          if (evt.type === "txBestBlocksState") toast.info("Transaction is in a best block");
         },
         error: (e: unknown) => {
           setTxState("Error: " + String(e));
+          toast.error("Transaction failed");
         },
-        complete: () => setTxState("Finalized"),
+        complete: () => {
+          setTxState("Finalized");
+          toast.success("Transaction finalized");
+        },
       });
     } catch (e) {
       setTxState("Error: " + String(e));
