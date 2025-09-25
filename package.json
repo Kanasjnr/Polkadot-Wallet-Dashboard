@@ -13,11 +13,13 @@
   "dependencies": {
     "@polkadot-api/descriptors": "file:.papi/descriptors",
     "@polkadot/extension-dapp": "0.61.7",
+    "@polkadot/util": "13.5.6",
+    "@polkadot/util-crypto": "13.5.6",
     "polkadot-api": "1.18.1",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },
-  "devDependencies": { 
+  "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
