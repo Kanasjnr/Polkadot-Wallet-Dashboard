@@ -41,6 +41,9 @@ Notes:
    - Click Send and approve in your extension
    - Follow the status text; when available, use the Subscan link to view the extrinsic
 
+## Technical article
+- Read the full write-up that explains the project and key decisions: [Technical article on Medium](https://medium.com/@nasihudeen04/381ee5a79d5c)
+
 ## Network notes
 - This dashboard connects to the Westend relay chain (`westend2`).
 - If you used an AssetHub faucet, those funds live on the AssetHub parachain and won’t appear in the relay chain `System.Account` balance.
