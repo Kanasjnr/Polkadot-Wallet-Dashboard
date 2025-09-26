@@ -48,6 +48,10 @@ Notes:
 - This dashboard connects to the Westend relay chain (`westend2`).
 - If you used an AssetHub faucet, those funds live on the AssetHub parachain and won’t appear in the relay chain `System.Account` balance.
 
+## Faucet
+- Westend (WND) is the public Polkadot testnet. You can get test WND from a community faucet (search “Westend faucet”) or by asking in Polkadot builders channels.
+- There is no “test DOT” on Polkadot mainnet. Use Westend for end‑to‑end transfer testing.
+
 ## Project layout (key files)
 - `src/lib/papi/client.ts`: smoldot worker + PAPI client setup for Westend (`westend2`)
 - `src/lib/papi/wallet.ts`: wallet integration
@@ -73,10 +77,27 @@ Notes:
 - Fee estimation
   - Removed on purpose to keep UX clean after some sign-dependent edge cases. Transfers work without it.
 
+## Security
+- This project is a demo for educational purposes. Do not use it with your main accounts or large funds.
+- No server custody: all signing happens in your browser via the wallet extension. Always verify the extension’s signing prompt.
+- Review and build from source before deploying.
+
+## Contributing
+Contributions are welcome!
+
+1. Fork and clone the repo
+2. Install and run locally
+   ```bash
+   npm install
+   npm run dev
+   ```
+3. Style/lint: keep code readable, avoid over‑abstractions, and prefer clear names. Match existing formatting. TypeScript: avoid `any` where possible.
+4. Open a PR with a concise description and screenshots if UI changes.
+
 ## References
 - Getting started (smoldot + typed API): `https://papi.how/getting-started`
 - Signers (pjs-signer, getPolkadotSigner): `https://papi.how/signers`
-- Simple transfer (Westend recipe): `https://papi.how/recipes/simple-transfer`
+- Simple transfer : `https://papi.how/recipes/simple-transfer`
 
 ## License
 MIT
