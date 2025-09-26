@@ -39,6 +39,20 @@ function App() {
       );
       setIsReady(true);
       setChainName("Westend");
+
+      console.log("client initialized");
+      try {
+        await enableExtensions();
+        const accs = await getInjectedAccounts();
+        setAccounts(accs);
+        console.log("wallet extensions enabled, accounts=", accs.length);
+        if (!selected && accs.length > 0) {
+          setSelected(accs[0].address);
+          console.log("wallet auto-selected", accs[0].address);
+        }
+      } catch {
+        console.error("wallet extensions enable failed");
+      }
     })();
     return () => {
       if (sub) sub.unsubscribe();
@@ -59,13 +73,15 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      if (!selected) return;
+      if (!selected || !isReady) return;
+      console.log("[balance] fetching for", selected);
       const api = getWestendApi();
       const info = await api.query.System.Account.getValue(selected);
       const free = info.data.free;
       setBalance(`${formatWnd(free)} WND`);
+      console.log("balance free", String(free));
     })();
-  }, [selected]);
+  }, [selected, isReady]);
 
   const handleTransfer = async () => {
     if (!selected) return;
@@ -196,7 +212,9 @@ function App() {
             </button>
           </div>
           {txState && (
-            <div className="text-sm text-gray-500 text-center mt-1">Tx: {txState}</div>
+            <div className="text-sm text-gray-500 text-center mt-1">
+              Tx: {txState}
+            </div>
           )}
           {txHash && (
             <div className="mt-1">
@@ -212,7 +230,7 @@ function App() {
           )}
         </div>
       </div>
-      </div>
+    </div>
   );
 }
 
