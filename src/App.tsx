@@ -59,6 +59,7 @@ function App() {
     };
   }, []);
 
+
   const handleConnect = async () => {
     setIsConnecting(true);
     try {
@@ -82,6 +83,7 @@ function App() {
       console.log("balance free", String(free));
     })();
   }, [selected, isReady]);
+
 
   const handleTransfer = async () => {
     if (!selected) return;
@@ -117,12 +119,13 @@ function App() {
       setTxState("Error: " + String(e));
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="max-w-3xl w-full px-6">
         <h1 className="text-center">Polkadot Wallet Dashboard (PAPI)</h1>
-        <div className="flex items-center justify-center gap-12 flex-wrap mb-3">
+        <div className="flex flex-col items-center gap-2 mb-4">
           {accounts.length === 0 ? (
             <button disabled={!isReady || isConnecting} onClick={handleConnect}>
               {isConnecting ? "Connecting…" : "Connect Wallet"}
@@ -135,6 +138,7 @@ function App() {
                   {" "}
                   | {selected.slice(0, 6)}…{selected.slice(-6)}{" "}
                   <button
+                    className="ml-2"
                     onClick={async () => {
                       try {
                         await navigator.clipboard.writeText(selected);
