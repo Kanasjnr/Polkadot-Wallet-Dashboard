@@ -9,6 +9,24 @@ import { enableExtensions, getInjectedAccounts } from "./lib/papi/wallet";
 import { MultiAddress } from "@polkadot-api/descriptors";
 import { formatWnd, parseWnd } from "./lib/units";
 import { toast } from "react-toastify";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function App() {
   const [isReady, setIsReady] = useState(false);
@@ -123,118 +141,149 @@ function App() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="max-w-3xl w-full px-6">
-        <h1 className="text-center">Polkadot Wallet Dashboard (PAPI)</h1>
-        <div className="flex flex-col items-center gap-2 mb-4">
-          {accounts.length === 0 ? (
-            <button disabled={!isReady || isConnecting} onClick={handleConnect}>
-              {isConnecting ? "Connecting…" : "Connect Wallet"}
-            </button>
-          ) : (
-            <span>
-              Wallet connected
-              {selected && (
-                <>
-                  {" "}
-                  | {selected.slice(0, 6)}…{selected.slice(-6)}{" "}
-                  <button
-                    className="ml-2"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(selected);
-                        toast.success("Address copied");
-                      } catch {
-                        toast.error("Copy failed");
-                      }
-                    }}
-                  >
-                    Copy
-                  </button>
-                </>
-              )}
-            </span>
-          )}
-          <span>{chainName ? `Network: ${chainName}` : "Network: …"}</span>
-          <span>
-            {finalized ? `Finalized #${finalized.number}` : "Finalized: …"}
-          </span>
-        </div>
+      <div className="w-full max-w-4xl space-y-6">
+        <h1 className="text-center text-2xl font-semibold">
+          Polkadot Wallet Dashboard (PAPI)
+        </h1>
 
-        <div className="mt-4">
-          <label>
-            Account:
-            <select
-              value={selected}
-              onChange={(e) => setSelected(e.target.value)}
-              disabled={accounts.length === 0}
-              className="ml-2"
-            >
-              <option value="" disabled>
-                {accounts.length === 0 ? "No accounts" : "Select account"}
-              </option>
-              {accounts.map((a) => (
-                <option key={a.address} value={a.address}>
-                  {a.name ? `${a.name} — ` : ""}
-                  {a.address}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <div className="mt-4">
-          <strong>Balance:</strong> {selected ? balance ?? "…" : "—"}
-        </div>
-
-        <div className="mx-auto mt-10 w-full max-w-md text-center space-y-6">
-          <h2 className="text-center text-lg font-semibold">Send (Westend)</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-[12px] justify-items-center">
-            <div>
-              <input
-                className="px-3 py-2 w-[400px] h-[20px] md:w-[320px] "
-                placeholder="Recipient address"
-                value={recipient}
-                onChange={(e) => setRecipient(e.target.value)}
-              />
-            </div>
-            <div>
-              <input
-                className="px-3 py-2 w-[280px] md:w-[220px]"
-                placeholder="Amount (WND)"
-                value={amountWnd}
-                onChange={(e) => setAmountWnd(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="flex justify-center mt-[15px]">
-            <button
-              className="mt-1 px-6 w-[180px] md:w-[200px]"
-              disabled={!selected || !recipient || !amountWnd}
-              onClick={handleTransfer}
-            >
-              Send
-            </button>
-          </div>
-          {txState && (
-            <div className="text-sm text-gray-500 text-center mt-1">
-              Tx: {txState}
-            </div>
-          )}
-          {txHash && (
-            <div className="mt-1">
-              <a
-                className="text-blue-600 hover:underline"
-                href={`https://westend.subscan.io/extrinsic/${txHash}`}
-                target="_blank"
-                rel="noreferrer"
+        <Card>
+          <CardHeader className="items-center">
+            <CardTitle className="text-base font-medium">
+              {accounts.length === 0 ? "Wallet" : "Wallet connected"}
+            </CardTitle>
+            <CardDescription className="text-sm">
+              {chainName ? `Network: ${chainName}` : "Network: …"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-3">
+            {accounts.length === 0 ? (
+              <Button
+                size="sm"
+                disabled={!isReady || isConnecting}
+                onClick={handleConnect}
               >
-                View on Subscan
-              </a>
+                {isConnecting ? "Connecting…" : "Connect Wallet"}
+              </Button>
+            ) : (
+              <div className="text-sm">
+                <span>Wallet connected</span>
+                {selected && (
+                  <span>
+                    {" "}| {selected.slice(0, 6)}…{selected.slice(-6)}
+                    <Button
+                      className="ml-2"
+                      variant="secondary"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(selected);
+                          toast.success("Address copied");
+                        } catch {
+                          toast.error("Copy failed");
+                        }
+                      }}
+                    >
+                      Copy
+                    </Button>
+                  </span>
+                )}
+              </div>
+            )}
+            <div className="text-xs text-muted-foreground">
+              {finalized ? `Finalized #${finalized.number}` : "Finalized: …"}
             </div>
-          )}
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Account</CardTitle>
+              <CardDescription>Select an account to use</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="account-select">Account</Label>
+                <Select
+                  value={selected}
+                  onValueChange={(v) => setSelected(v)}
+                  disabled={accounts.length === 0}
+                >
+                  <SelectTrigger id="account-select">
+                    <SelectValue
+                      placeholder={
+                        accounts.length === 0 ? "No accounts" : "Select account"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-64 overflow-y-auto">
+                    {accounts.map((a) => (
+                      <SelectItem key={a.address} value={a.address}>
+                        {a.name ? `${a.name} — ` : ""}
+                        {a.address}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="text-sm">
+                <span className="font-medium">Balance:</span>{" "}
+                {selected ? balance ?? "…" : "—"}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Send (Westend)</CardTitle>
+              <CardDescription>Transfer WND to another address</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="recipient">Recipient address</Label>
+                <Input
+                  id="recipient"
+                  placeholder="5Dsu..."
+                  value={recipient}
+                  onChange={(e) => setRecipient(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount (WND)</Label>
+                <Input
+                  id="amount"
+                  placeholder="0.5"
+                  value={amountWnd}
+                  onChange={(e) => setAmountWnd(e.target.value)}
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col items-center gap-2">
+              <Button
+                className="w-full md:w-auto"
+                disabled={!selected || !recipient || !amountWnd}
+                onClick={handleTransfer}
+              >
+                Send
+              </Button>
+              {txState && (
+                <div className="text-xs text-muted-foreground">Tx: {txState}</div>
+              )}
+              {txHash && (
+                <a
+                  className="text-xs text-blue-600 hover:underline"
+                  href={`https://westend.subscan.io/extrinsic/${txHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View on Subscan
+                </a>
+              )}
+            </CardFooter>
+          </Card>
         </div>
       </div>
-    </div>
+      </div>
   );
 }
 
