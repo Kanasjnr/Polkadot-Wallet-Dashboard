@@ -1,4 +1,4 @@
-import { createClient, type Client } from "polkadot-api";
+import { createClient } from "polkadot-api";
 import { getSmProvider } from "polkadot-api/sm-provider";
 import { startFromWorker } from "polkadot-api/smoldot/from-worker";
 import SmWorker from "polkadot-api/smoldot/worker?worker";
@@ -6,9 +6,10 @@ import { chainSpec as westendChainSpec } from "polkadot-api/chains/westend2";
 import { dot, wnd } from "@polkadot-api/descriptors";
 
 
-let client: Client | undefined;
+type PolkadotApiClient = ReturnType<typeof createClient>;
+let client: PolkadotApiClient | undefined;
 
-export async function initPolkadotClient(): Promise<Client> {
+export async function initPolkadotClient(): Promise<PolkadotApiClient> {
   if (client) return client;
 
   const worker = new SmWorker();
@@ -19,7 +20,7 @@ export async function initPolkadotClient(): Promise<Client> {
   return client;
 }
 
-export function getClient(): Client {
+export function getClient(): PolkadotApiClient {
   if (!client) throw new Error("PAPI client not initialized. Call initPolkadotClient() first.");
   return client;
 }
