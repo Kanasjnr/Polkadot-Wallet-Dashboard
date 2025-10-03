@@ -27,6 +27,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { decodeAddress } from "@polkadot/util-crypto";
 
 function App() {
   const [isReady, setIsReady] = useState(false);
@@ -45,6 +54,23 @@ function App() {
   const [amountWnd, setAmountWnd] = useState<string>("");
   const [txHash, setTxHash] = useState<string | null>(null);
   const [chainName, setChainName] = useState<string | null>(null);
+  const [isTransferring, setIsTransferring] = useState(false);
+
+  const selectedAccount = accounts.find((a) => a.address === selected);
+  const shortAddress = (addr: string) =>
+    `${addr.slice(0, 6)}…${addr.slice(-6)}`;
+  const getInitials = (name?: string) =>
+    name && name.trim().length > 0
+      ? name
+          .trim()
+          .split(/\s+/)
+          .map((s) => s[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase()
+      : selected
+      ? selected.slice(0, 2)
+      : "??";
 
   useEffect(() => {
     let sub: { unsubscribe: () => void } | undefined;
@@ -77,7 +103,6 @@ function App() {
     };
   }, []);
 
-
   const handleConnect = async () => {
     setIsConnecting(true);
     try {
@@ -102,11 +127,11 @@ function App() {
     })();
   }, [selected, isReady]);
 
-
   const handleTransfer = async () => {
     if (!selected) return;
     try {
       setTxState("Signing…");
+      setIsTransferring(true);
       const api = getWestendApi();
       const value = parseWnd(amountWnd.trim());
       const dest = recipient.trim();
@@ -127,32 +152,40 @@ function App() {
         error: (e: unknown) => {
           setTxState("Error: " + String(e));
           toast.error("Transaction failed");
+          setIsTransferring(false);
         },
         complete: () => {
           setTxState("Finalized");
           toast.success("Transaction finalized");
+          setIsTransferring(false);
         },
       });
     } catch (e) {
       setTxState("Error: " + String(e));
+      setIsTransferring(false);
     }
   };
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-4xl space-y-6">
+      <div className="w-full max-w-2xl space-y-6">
         <h1 className="text-center text-2xl font-semibold">
           Polkadot Wallet Dashboard (PAPI)
         </h1>
 
         <Card>
-          <CardHeader className="items-center">
-            <CardTitle className="text-base font-medium">
-              {accounts.length === 0 ? "Wallet" : "Wallet connected"}
-            </CardTitle>
+          <CardHeader className="items-center gap-2">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-base font-medium">
+                {accounts.length === 0 ? "Wallet" : "Wallet connected"}
+              </CardTitle>
+              <Badge variant="secondary">{chainName ? chainName : "…"}</Badge>
+              <Badge variant="outline">
+                {finalized ? `#${finalized.number}` : "#…"}
+              </Badge>
+            </div>
             <CardDescription className="text-sm">
-              {chainName ? `Network: ${chainName}` : "Network: …"}
+              Manage your connection
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-3">
@@ -165,32 +198,64 @@ function App() {
                 {isConnecting ? "Connecting…" : "Connect Wallet"}
               </Button>
             ) : (
-              <div className="text-sm">
-                <span>Wallet connected</span>
+              <div className="flex items-center gap-3 text-sm">
                 {selected && (
-                  <span>
-                    {" "}| {selected.slice(0, 6)}…{selected.slice(-6)}
-                    <Button
-                      className="ml-2"
-                      variant="secondary"
-                      size="sm"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(selected);
-                          toast.success("Address copied");
-                        } catch {
-                          toast.error("Copy failed");
-                        }
-                      }}
-                    >
-                      Copy
-                    </Button>
-                  </span>
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback>
+                      {getInitials(selectedAccount?.name)}
+                    </AvatarFallback>
+                  </Avatar>
                 )}
+                <span>
+                  {selected
+                    ? `${
+                        selectedAccount?.name
+                          ? `${selectedAccount.name} — `
+                          : ""
+                      }${shortAddress(selected)}`
+                    : "—"}
+                </span>
+                {selected && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          className="ml-1"
+                          variant="secondary"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(selected);
+                              toast.success("Address copied");
+                            } catch {
+                              toast.error("Copy failed");
+                            }
+                          }}
+                        >
+                          Copy
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Copy address</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    setAccounts([]);
+                    setSelected(undefined);
+                    setBalance(null);
+                  }}
+                >
+                  Disconnect
+                </Button>
               </div>
             )}
             <div className="text-xs text-muted-foreground">
-              {finalized ? `Finalized #${finalized.number}` : "Finalized: …"}
+              Use an extension account to interact
             </div>
           </CardContent>
         </Card>
@@ -207,20 +272,20 @@ function App() {
                 <Select
                   value={selected}
                   onValueChange={(v) => setSelected(v)}
-                  disabled={accounts.length === 0}
+                  disabled={accounts.length === 0 || isTransferring}
                 >
-                  <SelectTrigger id="account-select">
+                  <SelectTrigger id="account-select" className="w-full">
                     <SelectValue
                       placeholder={
                         accounts.length === 0 ? "No accounts" : "Select account"
                       }
                     />
                   </SelectTrigger>
-                  <SelectContent className="max-h-64 overflow-y-auto">
+                  <SelectContent className="max-h-64 overflow-y-auto w-[--radix-select-trigger-width]">
                     {accounts.map((a) => (
                       <SelectItem key={a.address} value={a.address}>
-                        {a.name ? `${a.name} — ` : ""}
-                        {a.address}
+                        {(a.name ? `${a.name} — ` : "") +
+                          shortAddress(a.address)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -246,7 +311,21 @@ function App() {
                   placeholder="5Dsu..."
                   value={recipient}
                   onChange={(e) => setRecipient(e.target.value)}
+                  disabled={!selected || isTransferring}
                 />
+                {recipient &&
+                  (() => {
+                    try {
+                      decodeAddress(recipient.trim());
+                      return null;
+                    } catch {
+                      return (
+                        <p className="text-xs text-destructive">
+                          Invalid address
+                        </p>
+                      );
+                    }
+                  })()}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount (WND)</Label>
@@ -255,19 +334,56 @@ function App() {
                   placeholder="0.5"
                   value={amountWnd}
                   onChange={(e) => setAmountWnd(e.target.value)}
+                  type="number"
+                  inputMode="decimal"
+                  disabled={!selected || isTransferring}
                 />
+                {amountWnd && Number.isNaN(Number(amountWnd)) && (
+                  <p className="text-xs text-destructive">
+                    Enter a valid number
+                  </p>
+                )}
+                {amountWnd && Number(amountWnd) <= 0 && (
+                  <p className="text-xs text-destructive">
+                    Amount must be greater than 0
+                  </p>
+                )}
               </div>
             </CardContent>
             <CardFooter className="flex flex-col items-center gap-2">
               <Button
                 className="w-full md:w-auto"
-                disabled={!selected || !recipient || !amountWnd}
+                disabled={
+                  !selected ||
+                  !recipient ||
+                  !amountWnd ||
+                  isTransferring ||
+                  (() => {
+                    try {
+                      decodeAddress(recipient.trim());
+                      return false;
+                    } catch {
+                      return true;
+                    }
+                  })() ||
+                  Number(amountWnd) <= 0 ||
+                  Number.isNaN(Number(amountWnd))
+                }
                 onClick={handleTransfer}
               >
-                Send
+                {isTransferring ? (
+                  <span className="inline-flex items-center gap-2">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"></span>
+                    Sending…
+                  </span>
+                ) : (
+                  "Send"
+                )}
               </Button>
               {txState && (
-                <div className="text-xs text-muted-foreground">Tx: {txState}</div>
+                <div className="text-xs text-muted-foreground">
+                  Tx: {txState}
+                </div>
               )}
               {txHash && (
                 <a
@@ -283,7 +399,7 @@ function App() {
           </Card>
         </div>
       </div>
-      </div>
+    </div>
   );
 }
 
