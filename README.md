@@ -12,6 +12,8 @@ This repo is intended as a reference for developers new to PAPI and the smoldot 
 - Vite + React + TypeScript
 - PAPI (polkadot-api) + smoldot (browser worker)
 - Browser extension signer (pjs-signer preferred)
+- Tailwind CSS + shadcn/ui components
+- react-toastify for toasts
 
 ## Prerequisites
 - Node.js 18+
@@ -58,7 +60,7 @@ Notes:
   - Preferred: `polkadot-api/pjs-signer` (extension-native `polkadotSigner`)
   - Fallback: adapter using `signRaw('bytes')` + SS58 decode + key-type detection
 - `src/lib/units.ts`: readable helpers: `formatWnd(plancks)` and `parseWnd(wndString)`
-- `src/App.tsx`: minimal dashboard UI and transfer flow using typed API
+- `src/App.tsx`: dashboard UI and transfer flow using typed API and shadcn/ui
 
 ## Troubleshooting
 - MultiAddress undefined when building a transfer
